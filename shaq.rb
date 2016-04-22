@@ -18,6 +18,7 @@
 
 require "parse_fasta"
 require "set"
+require_relative "graph"
 
 def branch_point? set
   set.count > 1
