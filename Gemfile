@@ -7,4 +7,5 @@ gem "trollop", "~> 2.1", ">= 2.1.2"
 group :development, :test do
   gem "guard-rspec", "~> 4.6", ">= 4.6.4", require: false
   gem "rspec", "~> 3.4"
+  gem "ruby-prof"
 end

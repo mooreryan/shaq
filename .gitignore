@@ -3,3 +3,6 @@ Gemfile.lock
 .ruby-gemset
 test_files/*big*
 bin/*big*
+test_files/*two_phage*
+time.html
+z

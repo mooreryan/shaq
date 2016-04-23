@@ -18,8 +18,9 @@
 
 class Read
   def self.k_plus_one_mers read, ksize
-    read.split("").each_cons(ksize+1).each_with_index do |kmer, pos|
-      yield kmer.join, pos
+    k = ksize+1
+    (0..read.length-k).each_with_index do |start, pos|
+      yield read[start, k], pos
     end
   end
 end
