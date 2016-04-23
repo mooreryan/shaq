@@ -1,3 +1,5 @@
 test_files/shaq*
 Gemfile.lock
 .ruby-gemset
+test_files/*big*
+bin/*big*
