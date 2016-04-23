@@ -17,8 +17,9 @@
 # along with Shaq.  If not, see <http://www.gnu.org/licenses/>.
 
 readsize = 25
-numreads = 100
-dna = "i_love_to_eat_apple_pie_and_love_to_eat_other_fun_things"
+numreads = 1000
+dna = "i_love_to_eat_apple_hahahahahaha_pie_and_love_to_eat_other_" +
+      "hahahahahaha_fun_things"
 
 start_range = (0..dna.length-readsize).to_a
 reads = numreads.times.each_with_index do |n|

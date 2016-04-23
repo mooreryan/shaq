@@ -19,6 +19,12 @@
 require_relative "../graph"
 
 describe Graph do
+  let(:outdir) { File.join File.dirname(__FILE__),
+                           "test_files",
+                           "output" }
+  let(:fasta_f) { File.join outdir, "output.fa" }
+  let(:contig_connections_f) { File.join outdir, "connections.txt" }
+
   let(:ksize) { 3 }
   let(:graph) { Graph.new ksize }
 
@@ -48,36 +54,101 @@ describe Graph do
       "aac" => 1,}
   }
 
-  let(:incounts) {
-    { "aaa" => 1,
-      "aat" => 1,
-      "ata" => 1,
-      "taa" => 1,
-      "aac" => 1,}
+  let(:contigs) {
+    ["gaaa", "aaa", "aataaa", "aacac"]
+  }
+
+  let(:fasta_contents) {
+    %w[>contig_1 >contig_2 >contig_3 >contig_4].zip(contigs).flatten.join("\n")
+  }
+
+  let(:contig_connections) {
+    { "aaa" => Set.new([0, 1, 2, 3]) }
+  }
+
+  let(:cc_contents) {
+    [
+      ["contig_0", "contig_1", "aaa"].join("\t"),
+      ["contig_0", "contig_2", "aaa"].join("\t"),
+      ["contig_0", "contig_3", "aaa"].join("\t"),
+      ["contig_1", "contig_2", "aaa"].join("\t"),
+      ["contig_1", "contig_3", "aaa"].join("\t"),
+      ["contig_2", "contig_3", "aaa"].join("\t"),
+    ].join "\n"
   }
 
 
-  before(:each) do
-    graph.add_to_graph header, read
-  end
-
-  describe "#add_to_graph" do
+  describe "#add" do
     it "adds the read to the graph" do
+      graph.add header, read
+
       expect(graph.graph).to eq db_graph
     end
 
     it "adds the header and pos to the kmer_to_read hash" do
-      expect(graph.kmer_to_read).to eq kmer_to_read
-    end
+      graph.add header, read
 
-    it "tracks number of incoming connections to kmers" do
-      expect(graph.incounts).to eq incounts
+      expect(graph.kmer_to_read).to eq kmer_to_read
     end
   end
 
   describe "#kmer_abundance" do
     it "returns a coll with kmer abundance" do
+      graph.add header, read
+
       expect(graph.kmer_abundance).to eq kmer_abundance
+    end
+  end
+
+  describe "#contigs" do
+    it "returns the contigs" do
+      graph.add header, "gaaaataaaacac"
+      graph.make_contigs
+
+      # NOTE if you just let this walk in order, it will spit back the
+      # whole, thing, however, when you have actual reads, the order
+      # isn't guaranteed to be correct, and you can get an incorrect
+      # contig if you don't break at every branch point when the order
+      # isn't perfect and the repeats are longer than ksize
+      expect(graph.contigs).to match_array contigs
+    end
+
+    # TODO I have a bad feeling about the code for this...
+    it "tracks the contigs connected with branch point kmers" do
+      graph.add header, "gaaaataaaacac"
+      graph.make_contigs
+
+      expect(graph.contig_connections).to eq contig_connections
+    end
+  end
+
+  describe "#print_fasta" do
+    it "prints contigs to fasta file" do
+      graph.add header, "gaaaataaaacac"
+      graph.make_contigs
+      graph.print_fasta fasta_f
+
+      data = File.open(fasta_f).read.chomp
+
+      expect(data).to eq fasta_contents
+
+      FileUtils.rm fasta_f
+      FileUtils.rmdir outdir
+    end
+  end
+
+  describe "#print_contig_connections" do
+    it "prints contigs connections to file" do
+      graph.add header, "gaaaataaaacac"
+      graph.make_contigs
+      graph.print_contig_connections contig_connections_f
+
+      data = File.open(contig_connections_f).read.chomp
+
+      expect(data).to eq cc_contents
+
+      FileUtils.rm contig_connections_f
+      FileUtils.rmdir outdir
     end
   end
 end
