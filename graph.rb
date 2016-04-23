@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Shaq.  If not, see <http://www.gnu.org/licenses/>.
 
+require "shaq_lib"
 require "set"
 require "fileutils"
 require_relative "read"
@@ -37,9 +38,10 @@ class Graph
   def add header, read
     k1, k2 = "", ""
     pos = -1
-    Read.k_plus_one_mers(read, @ksize) do |kmer, start_pos|
-      k1 = kmer[0..-2]
-      k2 = kmer[1..-1]
+    # Read.k_plus_one_mers(read, @ksize) do |kmer, start_pos|
+    start_pos = 0
+    ShaqLib.kmers(read, @ksize+1) do |kmer|
+      k1, k2 = ShaqLib.submers kmer
 
       if @graph.has_key? k1
         @graph[k1] << k2
@@ -50,6 +52,7 @@ class Graph
       end
 
       pos = start_pos
+      start_pos += 1
     end
 
     # make sure to add the last k-1mer
@@ -152,6 +155,10 @@ class Graph
   end
 
   private
+
+  def sub_mers kmer
+    [kmer[0..-2], kmer[1..-1]]
+  end
 
   def walk_is_done?
     @graph.empty?
